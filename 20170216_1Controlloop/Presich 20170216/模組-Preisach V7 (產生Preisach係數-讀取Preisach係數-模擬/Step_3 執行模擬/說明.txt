@@ -1,0 +1,7 @@
+1. Hys_Fab_Hybrid_V6 是子程式，為 Preisach 的多項式
+
+2. Hys_sim_Hybrid_TESTER 為執行遲滯模擬的程式，有兩種模式
+	
+	a. Pure`: 純粹的遲滯模型
+
+	b. Hybrid`: 遲滯觀察器量測上一時間點的遲滯 + Preisach model 遲滯補償變動量
