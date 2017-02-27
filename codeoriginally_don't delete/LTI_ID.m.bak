@@ -1,0 +1,93 @@
+clear all;clc;close all;
+
+Fs = 5e3;
+Ts = 1/Fs;
+
+Ce = 10.8;  % Capacitance: Ce = 10.8 uF = 3*C = 3*2*Cp
+C = 3.6;    % C: Capacitance of parallel piezo stacks in X-axis of stage
+            % Cp = 1.8 uF: Capacitance of piezo stack
+k = 120;    % k = 2*kp; unit: N/um
+Tem = 5.92; % unit: C/m or N/V
+
+%%  Load data
+Inp = load('chirp_100mto100_0to3V_SISO_5kHz.txt');
+Inp = Inp(2:length(Inp))';
+
+Data = load('Data_chirp_100mto100_0to3V_SISO_5kHz_1.txt');
+Data_Disp = Data(:,1);
+Data_Vc = Data(:,2);
+
+len = length(Inp);
+t = 0:Ts:Ts*(len-1);
+figure;hold on;
+plot(t, Inp, 'b');plot(t, Data_Disp, 'r');plot(t, Data_Vc, 'k');
+legend('Input*0.1 (V)', 'Disp. (\mum)', 'Vc (V)');
+xlabel('Time (sec)');
+
+y = Data_Disp / cos(15*pi/180) / 2;    % unit: um (Disp. of piezo stack)
+
+%% LTI System ID
+close all;
+q = Ce * Data_Vc;
+uh = Inp*10 - q/C + Tem/C*y;
+up = Inp*10 - uh;
+% figure;hold on;plot(t, q/C, 'b');plot(t, Data_Disp*Tem/C, 'r');plot(t, up, 'k');
+% xlabel('Time (sec)');
+figure;hold on;plot(t, uh, 'b');plot(t, up, 'r');xlabel('Time (sec)');
+legend('u_h (V)', 'u_p (V)');
+
+% ident: Open system ID toolbox
+load('Ctrl_Design_20120105.mat');
+G = zpk(pss3);G = G(1,1)
+zero(G)
+pole(G)
+G_u_q = Tem * G + C
+Ginv = inv(G)
+[zz,pp,kk] = zpkdata(Ginv);
+Ginv2 = zpk(zz, [pp{1,1} ; 0], kk, Ts);
+G_q_y = inv(C*Ginv2+Tem);
+
+%%  ID model verification
+close all;
+Inp = load('IDTest_5kHz_RndSin_1to100Hz.txt');
+Inp = Inp(2:length(Inp))';
+
+Data = load('Data_IDTest_5kHz_RndSin_1to100Hz_1.txt');
+Data_Disp = Data(:,1);
+Data_Vc = Data(:,2);
+
+len = length(Inp);
+t = 0:Ts:Ts*(len-1);
+figure;hold on;
+plot(t, Inp, 'b');plot(t, Data_Disp, 'r');plot(t, Data_Vc, 'k');
+legend('Input*0.1 (V)', 'Disp. (\mum)', 'Vc (V)');
+xlabel('Time (sec)');
+
+y = Data_Disp / 2;    % unit: um (Disp. of piezo stack)
+q = Ce * Data_Vc;
+uh = Inp*10 - q/C + Tem/C*y;
+up = Inp*10 - uh;
+
+Sim_y = lsim(G, up ,t);
+figure;
+subplot(211);hold on;plot(t, y, 'b');plot(t, Sim_y, 'r');
+legend('y (\mum)', 'Sim\_y (\mum)');
+xlabel('Time (sec)');
+subplot(212);plot(t, y - Sim_y, 'k');
+legend('Estimation Error (\mum)');
+xlabel('Time (sec)');
+
+mean(y(5*Fs:len) - Sim_y(5*Fs:len))
+std(y(5*Fs:len) - Sim_y(5*Fs:len))
+
+Sim_y2 = lsim(G_q_y, q ,t);
+figure;
+subplot(211);hold on;plot(t, y, 'b');plot(t, Sim_y2, 'r');
+legend('y (\mum)', 'Sim\_y2 (\mum)');
+xlabel('Time (sec)');
+subplot(212);plot(t, y - Sim_y2, 'k');
+legend('Estimation Error (\mum)');
+xlabel('Time (sec)');
+
+mean(y(5*Fs:len) - Sim_y2(5*Fs:len))
+std(y(5*Fs:len) - Sim_y2(5*Fs:len))
