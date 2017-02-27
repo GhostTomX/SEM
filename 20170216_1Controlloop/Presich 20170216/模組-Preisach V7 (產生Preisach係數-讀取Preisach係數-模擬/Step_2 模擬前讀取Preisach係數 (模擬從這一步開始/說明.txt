@@ -1,5 +1,0 @@
-Note:
-
-a. Step 1 得到的Preisach係數 .mat檔要放到這資料夾
-
-b. 如果只要模擬就從這一部直接開始 (跳過Step 1

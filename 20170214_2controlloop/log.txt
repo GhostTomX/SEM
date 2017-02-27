@@ -1,0 +1,3 @@
+20170212  first one test chrip (max1) the signle input ,the system's responses .
+what's more,  i added Kd control 
+_2 tried to adjust kp,ki and add the kd 

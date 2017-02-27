@@ -1,7 +1,0 @@
-在這邊把來上機得到的結果存成兩個
-
-1. 來源檔案 (沒有Preisach，只有Up, ve, y，名字可以任意取
-
-2. 處理後的檔案 (包含了Presiach係數，名字為Hys_Coe_Data_Ref2Hys_Spd_Lv_1_C84的形式
-
-	a. 上機用的Preisach系數txt檔案也在這產生
